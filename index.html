@@ -49,7 +49,7 @@
         for (var i=1; i<=5; i++) {
           copyText += "P" + i 
           if (document.getElementById('ckb' + i.toString()).checked) {
-            copyText += "🔒"
+            copyText += String.fromCodePoint(0x1F512);
           }
           copyText += ") " + document.getElementById('txtName' + i.toString()).value + " " + document.getElementById('invest' + i.toString()).value + "\n"
         }
