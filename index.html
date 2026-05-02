@@ -45,9 +45,13 @@
         let gbOwner = document.getElementById('ownerName').value;
         let ownerCost = document.getElementById('ownerCost').value
 
-        copyText += gbOwner + " " + window.gbShort[gbName] + " " + (gbLvl - 1) + "  -> " + (gbLvl) + "\r\n"
+        copyText += gbOwner + " " + window.gbShort[gbName] + " " + (gbLvl - 1) + " → " + (gbLvl) + "\n"
         for (var i=1; i<=5; i++) {
-          copyText += i + ") " + document.getElementById('txtName' + i.toString()).value + " " + document.getElementById('invest' + i.toString()).value + "\r\n"
+          copyText += "P" + i 
+          if (document.getElementById('ckb' + i.toString()).checked) {
+            copyText += "🔒"
+          }
+          copyText += ") " + document.getElementById('txtName' + i.toString()).value + " " + document.getElementById('invest' + i.toString()).value + "\n"
         }
         copyText += "(self: " + ownerCost + ")"
 
