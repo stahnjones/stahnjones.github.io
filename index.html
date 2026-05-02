@@ -1,0 +1,165 @@
+<html>
+  <head><title>Power Leveling UI Web version</title>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-4.0.0.min.js"></script>
+
+    <script type="text/javascript">
+
+      function cycleSlots(){
+        var names=new Array
+        var sourceIDs=new Array
+
+        //load unchecked names to variable
+        for (var i=1; i<=15; i++){
+          var tCkb = document.getElementById('ckb' + i.toString());
+          if (!tCkb.checked){
+            txtName = document.getElementById('txtName' + i.toString())
+            var tName = txtName.value;
+            txtName.value='';
+            if (tName!=''){
+              names.push(tName);
+            }
+          }
+        }
+      
+        //cycleNames()
+        var tName = names.shift();
+        names.push(tName);
+
+        curSlot=1;
+        while(names.length > 0){
+          tName = names.shift();
+          while(document.getElementById('ckb' + curSlot.toString()).checked){curSlot++;}
+          document.getElementById('txtName' + curSlot.toString()).value = tName;
+          curSlot++;
+        }
+
+        document.getElementById('GBlvl').value=parseInt(document.getElementById('GBlvl').value)+1
+        updateSlots()
+      }
+
+      function copyToClipboard(){
+
+        let copyText = ""
+        let gbName = document.getElementById('GB').value;
+        let gbLvl = document.getElementById('GBlvl').value;
+        let gbOwner = document.getElementById('ownerName').value;
+        let ownerCost = document.getElementById('ownerCost').value
+
+        copyText += gbOwner + " " + window.gbShort[gbName] + " " + (gbLvl - 1) + "  -> " + (gbLvl) + "\r\n"
+        for (var i=1; i<=5; i++) {
+          copyText += i + ") " + document.getElementById('txtName' + i.toString()).value + " " + document.getElementById('invest' + i.toString()).value + "\r\n"
+        }
+        copyText += "(self: " + ownerCost + ")"
+
+        //navigator.clipboard.writeText(copyText);
+        try {
+          navigator.clipboard.writeText(copyText);
+        } catch(err) {
+          let clipBox = document.getElementById('toClip');
+          clipBox.value = copyText;
+          clipBox.focus();
+          clipBox.select();
+          document.execCommand('copy');
+        }
+
+        
+      }
+
+      function updateSlots(){
+        let gbName = document.getElementById('GB').value;
+        let gbLvl = parseInt(document.getElementById('GBlvl').value);
+        /*let mult = document.getElementById('GBmult').value;*/
+
+        if (!gbName || !gbLvl ){return 0}
+
+        let lvlData = window.gbData.gbsData[gbName].levels[gbLvl - 1]
+
+        let ownerCost = lvlData.cost
+
+        for (var i=1; i<=5; i++){
+          let mult = document.getElementById('investmult' + i.toString()).value;
+          let slotCost = Math.ceil(lvlData.reward[ i - 1 ].fp * mult);
+          if (slotCost == 0) slotCost = 1;
+          document.getElementById('invest' + i.toString()).value = slotCost;
+          ownerCost -= slotCost
+        }
+
+        document.getElementById('ownerCost').value = ownerCost
+      }
+    </script>
+  </head><body>
+    <script type="text/javascript">
+      // Chrome 1 - 79
+      var isChrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime);
+
+      // Edge (based on chromium) detection
+      var isEdgeChromium = isChrome && (navigator.userAgent.indexOf("Edg") != -1);
+
+      if (isChrome||isEdgeChromium) {
+      document.write("Chrome/Chromium clipboard access does not work from a button on Google Sites. Select/Copy manually from the textbox below.");
+
+      }
+
+    </script>
+  <script type="text/javascript">
+    var gbShort={"The_Habitat":"Hab","Voyager_V1":"Voyager","Lotus_Temple":"LT","Rain_Forest_Project":"RFP","Royal_Albert_Hall":"RAH","Himeji_Castle":"HC","Atomium":"Atom","Deal_Castle":"Deal","Oracle_of_Delphi":"OoD","St_Mark_s_Basilica":"SMB","AI_Core":"Core","The_Virgo_Project":"VP","Seed_Vault":"SV","Alcatraz":"Traz","Hagia_Sophia":"HS","Colosseum":"Colosseum","Cape_Canaveral":"CC","Observatory":"Obs","The_Blue_Galaxy":"BG","Saint_Basil_s_Cathedral":"SBC","Tower_of_Babel":"ToB","The_Kraken":"Kra","Frauenkirche_of_Dresden":"FoD","Cathedral_of_Aachen":"CoA","Space_Needle":"SN","Atlantis_Museum":"AM","Capitol":"Capitol","The_Arc":"Arc","Statue_of_Zeus":"Zeus","Star_Gazer":"SG","Arctic_Orangery":"AO","Temple_of_Relics":"ToR","Flying_Island":"Island","Chateau_Frontenac":"CF","Castel_del_Monte":"CdM","Space_Carrier":"SC","Terracotta_Army":"TA","Lighthouse_of_Alexandria":"LoA","Truce_Tower":"Truce","Innovation_Tower":"Inno","Galata_Tower":"Galata","Notre_Dame":"ND","Gaea_Statue":"Gaea","Saturn_VI_Gate_PEGASUS":"Pegasus","Saturn_VI_Gate_CENTAURUS":"Centaurus","Saturn_VI_Gate_HYDRA":"Hydra"};
+    var gbData = (function () {
+      var gbData = null;
+      $.ajax({'async': false, 'global': true, 'url': 'https://foe.tools/foe-data/gbs-74ee9b0.json', 'dataType': "json", 'success': function(data) {gbData = data;}}); return gbData; })();
+
+  </script>
+  <table width="90%">
+    <tr>
+      <td width="40%">
+        <table>
+          <tr><th>Lock</th><th>Name</th><th>Invest</th><th>Reward Mult</th></tr>
+          <script type="text/javascript">
+            for (var i=1; i<=15; i++) {
+              document.write("<tr><td><input type='checkbox' id='ckb" + i.toString()+"' class='checkbox'></td><td><input type='textbox' id='txtName" + i.toString() + "' class='investor')></td><td>");
+              if (i<=5) {document.write("<input type='text' width='30' id='invest" + i.toString() + "' class='investment' disabled='true'></td><td><input type='number' min='1' max='5' step='0.001' id='investmult" + i.toString() + "' class='investmult' value='1.900' onchange='updateSlots();'>");}
+              document.write("</td></tr> ");
+            }
+          </script>
+        </table>
+        <br/><br/>
+
+
+      </td><td valign="top">
+        <table>
+          <tr><th colspan="2">Victim info</th></tr>
+          <tr><td>Name:</td><td><input type='text' id="ownerName"></td></tr>
+          <tr><td>GB Name:</td><td>
+            <select class="combo" id="GB" onchange="updateSlots();"></select>
+          </td></tr>
+          <tr><td>GB Target Level:</td><td><input type='number' min="1" max="250" id="GBlvl" value="40" onchange="updateSlots();"></td></tr>
+          <tr><td>Owner Cost:</td><td><input type='text' id='ownerCost' value=""></td></tr>
+          <tr></tr>
+          <tr><td colspan="2">
+            <br/><br/>
+            <input type="button" onclick="javascript:cycleSlots()" value="Cycle Slots">&nbsp;&nbsp;<input type="button" onclick="javascript:copyToClipboard()" value="Copy to clipboard"><br/><br/>
+            <textarea id="toClip" rows="10" cols="65"></textarea>
+          </td></tr>
+        </table>
+      </td>
+    </tr>
+    <tr><td colspan="2"><BR/><BR/><table><tr><th width="40%">GB queue: (Name, GB)</th><th width="40%">Spend limits (Name, limit)</th></tr>
+                   <tr><td><textarea id='gbQueue' rows='15' cols='60'></textarea></td>
+                       <td><textarea id='spendLimits' rows='15' cols='60'></textarea></td></tr></table>
+        </td>
+    </tr>
+  </table>
+  <script type="module" type="text/javascript">
+    let select = document.getElementById("GB");
+    let options = Object.keys(gbShort);
+    let names = Object.values(gbShort);   
+    options.sort();
+
+    for(var i=0; i<options.length; i++) {
+      let opt = document.createElement('option');
+      opt.value = options[i];
+      opt.text = options[i];
+      select.appendChild(opt);
+    } 
+
+  </script>
+</body></html>
